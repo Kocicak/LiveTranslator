@@ -108,7 +108,7 @@ class Panel extends Nette\Object implements \Tracy\IBarPanel
 	public function getPanel()
 	{
 		$latte = $this->createTemplate();
-		$file = $this->translator->isCurrentLangDefault() ? '/panel.inactive.phtml' : '/panel.phtml';
+		$file = '/panel.phtml';
 		$parameters = array();
 		$parameters['panel'] = $this;
 		$parameters['translator'] = $this->translator;

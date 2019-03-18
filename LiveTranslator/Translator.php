@@ -338,40 +338,25 @@ class Translator extends Nette\Object implements Nette\Localization\ITranslator
 
 		$lang = $this->getCurrentLang();
 
-		if ($lang === $this->defaultLang) {
-			if ($hasVariants) {
-				if (isset($stringVariants[$plural])) {
-					$translated = $stringVariants[$plural];
-				} else {
-					$translated = end($stringVariants);
-				}
-			}
-			else {
-				$translated = $string;
-			}
-		}
+        $translated = $this->translatorStorage->getTranslation($string, $lang, $plural, $this->namespace);
+        if (!is_string($translated) && !is_null($translated)) {
+            throw new TranslatorException('ITranslatorStorage::getTranslation() must return string, '.gettype($translated).' returned.');
+        }
 
-		else {
-			$translated = $this->translatorStorage->getTranslation($string, $lang, $plural, $this->namespace);
-			if (!is_string($translated) && !is_null($translated)) {
-				throw new TranslatorException('ITranslatorStorage::getTranslation() must return string, '.gettype($translated).' returned.');
-			}
+        if (!$translated) {
+            $newStrings = &$this->getNewStrings();
+            $newStrings[$string] = FALSE;
 
-			if (!$translated) {
-				$newStrings = &$this->getNewStrings();
-				$newStrings[$string] = FALSE;
-
-				if ($hasVariants) {
-					if (isset($stringVariants[$plural])) {
-						$translated = $stringVariants[$plural];
-					} else {
-						$translated = end($stringVariants);
-					}
-				} else {
-					$translated = $string;
-				}
-			}
-		}
+            if ($hasVariants) {
+                if (isset($stringVariants[$plural])) {
+                    $translated = $stringVariants[$plural];
+                } else {
+                    $translated = end($stringVariants);
+                }
+            } else {
+                $translated = $string;
+            }
+        }
 
 		if ($args !== NULL AND FALSE !== strpos($translated, '%')) {
 			$tmp = str_replace(array('%label', '%name', '%value'), array('#label', '#name', '#value'), $translated);
@@ -411,9 +396,6 @@ class Translator extends Nette\Object implements Nette\Localization\ITranslator
 	public function setTranslation($original, $translated)
 	{
 		$lang = $this->getCurrentLang();
-		if ($lang === $this->defaultLang) {
-			return;
-		}
 		$original = trim($original);
 		if ($translated === FALSE) {
 			$newStrings = &$this->getNewStrings();
